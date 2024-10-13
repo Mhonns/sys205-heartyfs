@@ -44,13 +44,13 @@ int main()
 
     // Test the block 1 and block 2
     // TODO delete this
-    struct heartyfs_superblock *test = (struct heartyfs_superblock *)(buffer);
-    printf("\n %s", test->dir_name);
-    printf("\n %s", test->entries[0].file_name);
-    printf("\n %s", test->entries[1].file_name);
+    // struct heartyfs_superblock *test = (struct heartyfs_superblock *)(buffer);
+    // printf("\n %s", test->dir_name);
+    // printf("\n %s", test->entries[0].file_name);
+    // printf("\n %s", test->entries[1].file_name);
 
-    uint8_t *test2 = (uint8_t *)(buffer + BLOCK_SIZE);
-    printf("\n %d\n", status_block(test2, 0));
+    // uint8_t *test2 = (uint8_t *)(buffer + BLOCK_SIZE);
+    // printf("\n %d\n", status_block(test2, 0));
 
     // Clean up
     msync(buffer, DISK_SIZE, MS_SYNC);
