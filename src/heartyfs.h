@@ -31,9 +31,10 @@ struct heartyfs_superblock
     int free_blocks;        // 4 bytes
     int block_size;         // 4 bytes
     int type;               // 4 bytes
+    char dir_name[28];      // 28 bytes
     int size;               // 4 bytes
-    struct heartyfs_dir_entry entry; // 32 bytes
-}; // Overall: 52 bytes
+    struct heartyfs_dir_entry entries[14]; // 32 bytes
+}; // Overall: 80 bytes
 
 struct heartyfs_inode 
 {
