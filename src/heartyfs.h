@@ -50,21 +50,21 @@ struct heartyfs_data_block
     char name[508];         // 508 bytes
 };  // Overall: 512 bytes
 
-extern uint8_t bitmap[NUM_BLOCK / 8];  // Bitmap with 2048 bits
-
 #ifndef HEARTYFS_H
 #define HEARTYFS_H
 
 // Bitmap operations
-void free_block(int block_id);
-void occupy_block(int block_id);
-int find_free_block();
-int status_block(int block_id);
+void free_block(int block_id, uint8_t *bitmap);
+void occupy_block(int block_id, uint8_t *bitmap);
+int find_free_block(uint8_t *bitmap);
+int status_block(int block_id, uint8_t *bitmap);
 
 // Entry and Directory operations
-int search_file_in_dir(struct heartyfs_directory *parent_dir, char *target_name);
+int search_file_in_dir(struct heartyfs_directory *parent_dir, char *target_name, uint8_t *bitmap);
 int create_entry(struct heartyfs_superblock *superblock, struct heartyfs_directory *parent_dir, 
-                    char *target_name);
-int create_directory(struct heartyfs_superblock *superblock, void *buffer, char *target_name);
+                    char *target_name, int target_block_id, uint8_t *bitmap);
+int create_directory(struct heartyfs_superblock *superblock, void *buffer, 
+                        char *target_name, uint8_t target_block_id, 
+                        uint8_t parent_block_id, uint8_t *bitmap);
 
 #endif
