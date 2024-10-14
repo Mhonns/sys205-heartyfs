@@ -28,7 +28,8 @@ int main(int argc, char *argv[]) {
 
     // Check whether the filesystem was initialized
     struct heartyfs_superblock *superblock = (struct heartyfs_superblock *) buffer;
-    if (superblock->root_dir == NULL)
+    uint8_t *bitmap = (uint8_t *)(buffer + BLOCK_SIZE);
+    if (strcmp(superblock->root_dir->name, "") == 0)
     {
         msync(buffer, DISK_SIZE, MS_SYNC);
         munmap(buffer, DISK_SIZE);
@@ -49,7 +50,7 @@ int main(int argc, char *argv[]) {
         sscanf(token, "%s", dir_name);
         if (depth == matched_depth)
         {
-            int parent_block_id = search_file_in_dir(parent_dir, dir_name);
+            int parent_block_id = search_file_in_dir(parent_dir, dir_name, bitmap);
             if (parent_block_id != 0)
             {
                 parent_dir = (struct heartyfs_directory *) (buffer + BLOCK_SIZE * parent_block_id);
@@ -59,14 +60,18 @@ int main(int argc, char *argv[]) {
         token = strtok(NULL, delimiter);
         depth++;
     }
-    printf("Match depth %d vs depth %d\n", matched_depth, depth);
-    if (matched_depth == depth - 1) // If the directory exists
+
+    printf("Matched vs depth: %d vs %d\n", matched_depth, depth);
+    if (matched_depth == depth - 1) // If the parent directory exists
     {
         // Create a entry
-        create_entry(superblock, parent_dir, dir_name);
+        int free_block_id = find_free_block(bitmap);
+        create_entry(superblock, parent_dir, dir_name, free_block_id, bitmap);
         // Create a directory
-        create_directory(superblock, buffer, dir_name);
+        int parent_block_id = parent_dir->entries[0].block_id;
+        create_directory(superblock, buffer, dir_name, free_block_id, parent_block_id, bitmap);
     }
+    else if (matched_depth == depth) printf("Error: The directory %s has already been existed\n", dir_name);
     else printf("Error: No such a parent directory for: %s\n", dir_name);
 
     // Clean up
