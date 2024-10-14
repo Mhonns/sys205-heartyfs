@@ -10,19 +10,21 @@
 #define BLOCK_SIZE (1 << 9)
 #define DISK_SIZE (1 << 20)
 #define NUM_BLOCK (DISK_SIZE / BLOCK_SIZE)
+#define FILES_PER_DIR 14
+#define CHAR_SIZE 28
 
 struct heartyfs_dir_entry 
 {
-    int block_id;           // 4 bytes
-    char file_name[28];     // 28 bytes
+    int block_id;               // 4 bytes
+    char file_name[CHAR_SIZE];  // 28 bytes
 };  // Overall: 32 bytes 
 
 struct heartyfs_directory 
 {
     int type;               // 4 bytes
-    char name[28];          // 28 bytes
+    char name[CHAR_SIZE];   // 28 bytes
     int size;               // 4 bytes
-    struct heartyfs_dir_entry entries[14]; // 448 bytes
+    struct heartyfs_dir_entry entries[FILES_PER_DIR]; // 448 bytes
 }; // Overall: 484 bytes
 
 struct heartyfs_superblock 
@@ -31,10 +33,8 @@ struct heartyfs_superblock
     int free_blocks;        // 4 bytes
     int block_size;         // 4 bytes
     int type;               // 4 bytes
-    char dir_name[28];      // 28 bytes
-    int size;               // 4 bytes
-    struct heartyfs_dir_entry entries[14]; // 32 bytes
-}; // Overall: 80 bytes
+    struct heartyfs_directory root_dir[1]; // 484 bytes
+}; // Overall: 504 bytes
 
 struct heartyfs_inode 
 {
@@ -52,29 +52,19 @@ struct heartyfs_data_block
 
 extern uint8_t bitmap[NUM_BLOCK / 8];  // Bitmap with 2048 bits
 
-void free_block(uint8_t *bitmap, int block_id) 
-{
-    bitmap[block_id / 8] |= (1 << (block_id % 8));
-}
+#ifndef HEARTYFS_H
+#define HEARTYFS_H
 
-void occupy_block(uint8_t *bitmap, int block_id) 
-{
-    bitmap[block_id / 8] &= ~(1 << (block_id % 8));
-}
+// Bitmap operations
+void free_block(int block_id);
+void occupy_block(int block_id);
+int find_free_block();
+int status_block(int block_id);
 
-int status_block(uint8_t *bitmap, int block_id) 
-{
-    return (bitmap[block_id / 8] >> (block_id % 8)) & 1;
-}
+// Entry and Directory operations
+int search_file_in_dir(struct heartyfs_directory *parent_dir, char *target_name);
+int create_entry(struct heartyfs_superblock *superblock, struct heartyfs_directory *parent_dir, 
+                    char *target_name);
+int create_directory(struct heartyfs_superblock *superblock, void *buffer, char *target_name);
 
-int find_free_block(uint8_t *bitmap) 
-{
-    for (int i = 0; i < NUM_BLOCK; i++) 
-    {
-        if (status_block(bitmap, i) > 0) 
-        {
-            return i;
-        }
-    }
-    return -1; // No free block found
-}
+#endif
