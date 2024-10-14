@@ -36,22 +36,22 @@ int main()
     snprintf(root_dir->entries[1].file_name, sizeof(root_dir->entries[1].file_name), "%s", "..");
 
     // Initialize the bitmap
+    uint8_t *bitmap = (uint8_t *)(buffer + BLOCK_SIZE);
     memset(bitmap, 0xFF, sizeof(bitmap));   // Set all bits to 1
 
     // Mark occupied
-    occupy_block(0);   // Occupied first block for superblock
-    occupy_block(1);   // Occupied second block for bitmap
+    occupy_block(0, bitmap);   // Occupied first block for superblock
+    occupy_block(1, bitmap);   // Occupied second block for bitmap
     memcpy((uint8_t *)(buffer + BLOCK_SIZE), bitmap, sizeof(bitmap)); // Put in the second block
 
     // Test the block 1 and block 2
     // TODO delete this
-    // struct heartyfs_superblock *test = (struct heartyfs_superblock *)(buffer);
-    // printf("\n %s", test->root_dir->name);
-    // printf("\n %s", test->root_dir->entries[0].file_name);
-    // printf("\n %s", test->root_dir->entries[1].file_name);
-
-    // uint8_t *test2 = (uint8_t *)(buffer + BLOCK_SIZE);
-    // printf("\n %d\n", status_block(0));
+    struct heartyfs_superblock *test = (struct heartyfs_superblock *)(buffer);
+    printf("\n %s", test->root_dir->name);
+    printf("\n %s", test->root_dir->entries[0].file_name);
+    printf("\n %s", test->root_dir->entries[1].file_name);
+    uint8_t *test2 = (uint8_t *)(buffer + BLOCK_SIZE);
+    printf("\n %d\n %d", status_block(1, test2), status_block(3, test2));
 
     // Clean up
     msync(buffer, DISK_SIZE, MS_SYNC);
