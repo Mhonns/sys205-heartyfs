@@ -66,5 +66,7 @@ int create_entry(struct heartyfs_superblock *superblock, struct heartyfs_directo
 int create_directory(struct heartyfs_superblock *superblock, void *buffer, 
                         char *target_name, uint8_t target_block_id, 
                         uint8_t parent_block_id, uint8_t *bitmap);
+int dir_string_check(char *input_str, char *dir_name, void* buffer,
+                        struct heartyfs_directory *parent_dir, uint8_t *bitmap);
 
 #endif
