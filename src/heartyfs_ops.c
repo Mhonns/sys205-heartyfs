@@ -27,6 +27,33 @@ int find_free_block(uint8_t *bitmap)
     return -1; // No free block found
 }
 
+int dir_string_check(char *input_str, char *dir_name, void* buffer,
+                        struct heartyfs_directory *parent_dir, uint8_t *bitmap)
+{
+    char delimiter[2] = "/";
+    char* token = strtok(input_str, delimiter);
+    int depth = 0;
+    int matched_depth = 0;
+    while (token != NULL) 
+    {
+        sscanf(token, "%s", dir_name);
+        if (depth == matched_depth)
+        {
+            int parent_block_id = search_file_in_dir(parent_dir, dir_name, bitmap);
+            if (parent_block_id != 0)
+            {
+                parent_dir = (struct heartyfs_directory *) (buffer + BLOCK_SIZE * parent_block_id);
+                matched_depth++;
+            }
+        }
+        token = strtok(NULL, delimiter);
+        depth++;
+    }
+    printf("Matched vs depth: %d vs %d\n", matched_depth, depth);
+    int diff = depth - matched_depth;
+    return diff;
+}
+
 int search_file_in_dir(struct heartyfs_directory *parent_dir, char *target_name, uint8_t *bitmap)
 {
     for (int i = 0; i < parent_dir->size; i++)
@@ -81,7 +108,7 @@ int create_directory(struct heartyfs_superblock *superblock, void *buffer,
         snprintf(created_dir->name, sizeof(created_dir->name), "%s", target_name);
         create_entry(superblock, created_dir, ".", target_block_id, bitmap);
         create_entry(superblock, created_dir, "..", parent_block_id, bitmap);
-        printf("Success: The directory %s was\n", created_dir->name);
+        printf("Success: The directory %s was created\n", created_dir->name);
         return 0;
     }
 }
