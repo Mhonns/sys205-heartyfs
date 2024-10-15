@@ -25,19 +25,17 @@ int main()
     superblock->free_blocks = NUM_BLOCK - 2;
     superblock->block_size = BLOCK_SIZE;
 
-    // Add root, ., and .. directories
-    struct heartyfs_directory *root_dir = superblock->root_dir;
-    root_dir->type = 1;
-    root_dir->size = 2;
-    snprintf(root_dir->name, sizeof(root_dir->name), "%s", "/");
-    root_dir->entries[0].block_id = 0;
-    snprintf(root_dir->entries[0].file_name, sizeof(root_dir->entries[0].file_name), "%s", ".");
-    root_dir->entries[1].block_id = 0;
-    snprintf(root_dir->entries[1].file_name, sizeof(root_dir->entries[1].file_name), "%s", "..");
-
     // Initialize the bitmap
     uint8_t *bitmap = (uint8_t *)(buffer + BLOCK_SIZE);
     memset(bitmap, 0xFF, sizeof(bitmap));   // Set all bits to 1
+
+    // Add root, ., and .. directories
+    struct heartyfs_directory *root_dir = superblock->root_dir;
+    root_dir->type = 1;
+    root_dir->size = 0;
+    snprintf(root_dir->name, sizeof(root_dir->name), "%s", "/");
+    create_entry(superblock, root_dir, ".", 0, bitmap);
+    create_entry(superblock, root_dir, "..", 0, bitmap);
 
     // Mark occupied
     occupy_block(0, bitmap);   // Occupied first block for superblock
