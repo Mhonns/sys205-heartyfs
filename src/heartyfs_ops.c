@@ -87,30 +87,10 @@ int create_entry(struct heartyfs_superblock *superblock, struct heartyfs_directo
                     "%s", target_name);
         parent_dir->entries[size].block_id = target_block_id;
         parent_dir->size++;
-        printf("Success: Created entry %s at %s with id %d now size %d\n", parent_dir->entries[size].file_name, 
-                    parent_dir->name, parent_dir->entries[size].block_id, parent_dir->size);
+        printf("Success: Created entry %s at %s with id %d\n", parent_dir->entries[size].file_name, 
+                    parent_dir->name, parent_dir->entries[size].block_id);
         return 1;
     }
-}
-
-int create_directory(struct heartyfs_superblock *superblock, void *buffer, 
-                        char *target_name, uint8_t target_block_id, 
-                        uint8_t parent_block_id, uint8_t *bitmap)
-{
-    struct heartyfs_directory *created_dir = (struct heartyfs_directory *)(buffer + BLOCK_SIZE * target_block_id);
-    created_dir->type = 1;
-    created_dir->size = 0;
-    snprintf(created_dir->name, sizeof(created_dir->name), "%s", target_name);
-    if (create_entry(superblock, created_dir, ".", target_block_id, bitmap) != 1)
-    {
-        return -1;
-    }
-    if (create_entry(superblock, created_dir, "..", parent_block_id, bitmap) != 1)
-    {
-        return -1;
-    }
-    printf("Success: The directory %s was created\n", created_dir->name);
-    return 1;
 }
 
 int remove_entry(struct heartyfs_directory *parent_dir, char *target_name)
@@ -122,38 +102,10 @@ int remove_entry(struct heartyfs_directory *parent_dir, char *target_name)
         {
             // Move the last entry to the removed entry
             parent_dir->entries[i] = parent_dir->entries[parent_dir->size - 1];
-            printf("Debug: moved %s to entry index %d\n", parent_dir->entries[i].file_name, i);
             parent_dir->size--;
-            break;
+            printf("Success: Removed entry %s\n", target_name);
+            return 1;
         }
     }
-}
-
-int remove_directory(struct heartyfs_superblock *superblock, void *buffer, 
-                        struct heartyfs_directory *target_dir, uint8_t *bitmap)
-{
-    char temp_dir_name[FILENAME_MAX];
-    strcpy(temp_dir_name, target_dir->name);
-
-    // remove detail from parent of target_dir
-    int parent_block_id = target_dir->entries[1].block_id;
-    struct heartyfs_directory *parent_dir = NULL;
-    if (parent_block_id == 0) parent_dir = superblock->root_dir;
-    else parent_dir = (struct heartyfs_directory *) (buffer + BLOCK_SIZE * parent_block_id);
-    remove_entry(parent_dir, temp_dir_name);
-
-    // remove detail from target dir (just in case)
-    target_dir->type = 0;
-    target_dir->name[0] = '\0'; 
-    for (int i = 0; i < target_dir->size; i++)
-    { 
-        target_dir->entries[i].block_id = 0;
-        target_dir->entries[i].file_name[0] = '\0';
-    }
-    remove_entry(target_dir, ".");
-    remove_entry(target_dir, "..");
-
-    // remove detail in target_dir
-    printf("Success: The directory was %s removed\n", temp_dir_name);
-    return 1;
+    return -1;
 }

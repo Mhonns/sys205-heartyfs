@@ -1,5 +1,25 @@
 #include "../heartyfs.h"
 
+int create_directory(struct heartyfs_superblock *superblock, void *buffer, 
+                        char *target_name, uint8_t target_block_id, 
+                        uint8_t parent_block_id, uint8_t *bitmap)
+{
+    struct heartyfs_directory *created_dir = (struct heartyfs_directory *)(buffer + BLOCK_SIZE * target_block_id);
+    created_dir->type = 1;
+    created_dir->size = 0;
+    snprintf(created_dir->name, sizeof(created_dir->name), "%s", target_name);
+    if (create_entry(superblock, created_dir, ".", target_block_id, bitmap) != 1)
+    {
+        return -1;
+    }
+    if (create_entry(superblock, created_dir, "..", parent_block_id, bitmap) != 1)
+    {
+        return -1;
+    }
+    printf("Success: The directory %s was created\n", created_dir->name);
+    return 1;
+}
+
 int main(int argc, char *argv[]) {
     printf("heartyfs_mkdir\n");
 

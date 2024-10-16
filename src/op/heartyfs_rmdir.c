@@ -1,5 +1,34 @@
 #include "../heartyfs.h"
 
+int remove_directory(struct heartyfs_superblock *superblock, void *buffer, 
+                        struct heartyfs_directory *target_dir, uint8_t *bitmap)
+{
+    char temp_dir_name[FILENAME_MAX];
+    strcpy(temp_dir_name, target_dir->name);
+
+    // remove detail from parent of target_dir
+    int parent_block_id = target_dir->entries[1].block_id;
+    struct heartyfs_directory *parent_dir = NULL;
+    if (parent_block_id == 0) parent_dir = superblock->root_dir;
+    else parent_dir = (struct heartyfs_directory *) (buffer + BLOCK_SIZE * parent_block_id);
+    if (remove_entry(parent_dir, temp_dir_name) != 1) return -1; 
+
+    // remove detail from target dir (just in case)
+    target_dir->type = 0;
+    target_dir->name[0] = '\0'; 
+    for (int i = 0; i < target_dir->size; i++)
+    { 
+        target_dir->entries[i].block_id = 0;
+        target_dir->entries[i].file_name[0] = '\0';
+    }
+    if (remove_entry(target_dir, ".") != 1) return -1; 
+    if (remove_entry(target_dir, "..") != 1) return -1;
+
+    // remove detail in target_dir
+    printf("Success: The directory was %s removed\n", temp_dir_name);
+    return 1;
+}
+
 int main(int argc, char *argv[]) {
     printf("heartyfs_rmdir\n");
 
@@ -45,21 +74,25 @@ int main(int argc, char *argv[]) {
     int diff = dir_string_check(temp_input, dir_name, buffer, &current_dir, bitmap);
     if (diff == 0)  // Check whether the input string directory equal to current directory string.
     {
-        if (current_dir->type == 1)
+        if (strcmp(current_dir->name, "/") != 0)
         {
-            if (current_dir->size <= 2) 
+            if (current_dir->type == 1)
             {
-                int target_block_id = current_dir->entries[0].block_id;
-                if (remove_directory(superblock, buffer, current_dir, bitmap) == 1)
+                if (current_dir->size <= 2) 
                 {
-                    // Mark Free
-                    superblock->free_blocks++;
-                    free_block(target_block_id, bitmap);
+                    int target_block_id = current_dir->entries[0].block_id;
+                    if (remove_directory(superblock, buffer, current_dir, bitmap) == 1)
+                    {
+                        // Mark Free
+                        superblock->free_blocks++;
+                        free_block(target_block_id, bitmap);
+                    }
                 }
-            }
-            else printf("Error: Please empty the directory %s first\n", current_dir->name);
-        } 
-        else printf("Error: The target entry is not a directory\n");
+                else printf("Error: Please empty the directory %s first\n", current_dir->name);
+            } 
+            else printf("Error: The target entry is not a directory\n");
+        }
+        else printf("Error: Can not remove the root directory");
     }
     else printf("Error: No such a parent for directory: %s\n", dir_name);
 

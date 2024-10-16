@@ -8,7 +8,7 @@ bin/heartyfs_init
 #      /dir3/dir5
 # /dir6
 
-echo '\n--Creating Case--\n'
+echo '\n--Creating Directory Case--\n'
 echo '\nError cases\n'
 bin/heartyfs_mkdir /
 bin/heartyfs_mkdir /dir1/dir2
@@ -50,3 +50,15 @@ bin/heartyfs_rmdir /dir6
 bin/heartyfs_rmdir /dir1/dir2/dir4
 bin/heartyfs_rmdir /dir1/dir3/dir5
 bin/heartyfs_rmdir /dir1/dir3
+
+# Creating file case
+# /dir1/dir2            # Recap
+#      /dir3/dir5
+#
+# /dir1/dir2/dir4
+#      /dir3/dir5
+
+echo '\n--Recreate dir4 cases--\n'
+bin/heartyfs_mkdir /dir1/dir2/dir4
+
+echo '\n--Creating file cases--\n'
