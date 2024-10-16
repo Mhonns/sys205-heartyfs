@@ -1,5 +1,17 @@
 #include "../heartyfs.h"
 
+int create_file(struct heartyfs_superblock *superblock, void *buffer, 
+                        char *target_name, uint8_t target_block_id, 
+                        uint8_t parent_block_id, uint8_t *bitmap)
+{
+    struct heartyfs_inode *created_file = (struct heartyfs_inode *)(buffer + BLOCK_SIZE * target_block_id);
+    created_file->type = 0;
+    created_file->size = 0;
+    snprintf(created_file->name, sizeof(created_file->name), "%s", target_name);
+    printf("Success: The file %s was created\n", target_name);
+    return 1;
+}
+
 int main(int argc, char *argv[]) 
 {
     printf("heartyfs_creat\n");
@@ -51,19 +63,19 @@ int main(int argc, char *argv[])
             // Check and create an entry on the parent block if possible
             if (create_entry(superblock, parent_dir, dir_name, free_block_id, bitmap) == 1) 
             {
-                // Check and create a directory if possible
+                // Check and create a file if possible
                 int parent_block_id = parent_dir->entries[0].block_id;
-                if (create_directory(superblock, buffer, dir_name, 
+                if (create_file(superblock, buffer, dir_name, 
                                         free_block_id, parent_block_id, bitmap) == 1)
                 {
                     // Mark occupied
                     superblock->free_blocks--;
                     occupy_block(free_block_id, bitmap);
                 }
-            };
+            }
         }
     }
-    else if (diff == 0) printf("Error: The directory %s has already existed\n", argv[1]);    
+    else if (diff == 0) printf("Error: The file %s has already existed\n", dir_name);    
     else printf("Error: No such a parent for directory: %s\n", dir_name);
 
     // Clean up

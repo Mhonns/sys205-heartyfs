@@ -80,10 +80,11 @@ int main(int argc, char *argv[]) {
                     superblock->free_blocks--;
                     occupy_block(free_block_id, bitmap);
                 }
-            };
+            }
         }
+        else printf("Error: There is no free block left in the disk\n");
     }
-    else if (diff == 0) printf("Error: The directory %s has already existed\n", argv[1]);    
+    else if (diff == 0) printf("Error: The directory %s has already existed\n", dir_name);    
     else printf("Error: No such a parent for directory: %s\n", dir_name);
 
     // Clean up
