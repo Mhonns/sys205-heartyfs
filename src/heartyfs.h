@@ -60,13 +60,14 @@ int find_free_block(uint8_t *bitmap);
 int status_block(int block_id, uint8_t *bitmap);
 
 // Entry and Directory operations
-int search_file_in_dir(struct heartyfs_directory *parent_dir, char *target_name, uint8_t *bitmap);
+int search_entry_in_dir(struct heartyfs_directory *parent_dir, char *target_name);
 int create_entry(struct heartyfs_superblock *superblock, struct heartyfs_directory *parent_dir, 
                     char *target_name, int target_block_id, uint8_t *bitmap);
 int create_directory(struct heartyfs_superblock *superblock, void *buffer, 
                         char *target_name, uint8_t target_block_id, 
                         uint8_t parent_block_id, uint8_t *bitmap);
 int dir_string_check(char *input_str, char *dir_name, void* buffer,
-                        struct heartyfs_directory *parent_dir, uint8_t *bitmap);
-
+                        struct heartyfs_directory **parent_dir, uint8_t *bitmap);
+int remove_directory(struct heartyfs_superblock *superblock, void *buffer, 
+                        struct heartyfs_directory *target_dir, uint8_t *bitmap);
 #endif
