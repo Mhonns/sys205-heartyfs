@@ -39,17 +39,21 @@ int dir_string_check(char *input_str, char *dir_name, void* buffer,
         if (depth == matched_depth)
         {
             sscanf(token, "%s", dir_name);
-            
             int parent_block_id = search_entry_in_dir(*parent_dir, dir_name);
             if (parent_block_id > 0)
             {
-                *parent_dir = (struct heartyfs_directory *) (buffer + BLOCK_SIZE * parent_block_id);
+                struct heartyfs_directory *temp_dir = (struct heartyfs_directory *) (buffer + BLOCK_SIZE * parent_block_id);
+                if (temp_dir->type == 1)    // check whether it is a directory or not
+                {
+                    *parent_dir = (struct heartyfs_directory *) (buffer + BLOCK_SIZE * parent_block_id);
+                }
                 matched_depth++;
             }
             else if (parent_block_id == 0)
             {
                 struct heartyfs_superblock *superblock = (struct heartyfs_superblock *) buffer;
                 *parent_dir = superblock->root_dir;
+                matched_depth++;
             }
         }
         token = strtok(NULL, delimiter);
@@ -93,10 +97,13 @@ int create_entry(struct heartyfs_superblock *superblock, struct heartyfs_directo
     }
 }
 
-int remove_entry(struct heartyfs_directory *parent_dir, char *target_name)
+int remove_entry(struct heartyfs_superblock *superblock, void* buffer, 
+                    int parent_block_id, char *target_name)
 {
-    // remove entries from the parent and move the last item
-    if (strcmp(target_name, ".") != 0 && strcmp(target_name, ".."))
+    struct heartyfs_directory *parent_dir = NULL;
+    if (parent_block_id == 0) parent_dir = superblock->root_dir;
+    else parent_dir = (struct heartyfs_directory *) (buffer + BLOCK_SIZE * parent_block_id);
+    if (strcmp(target_name, ".") != 0 && strcmp(target_name, "..") != 0)
     {
         for (int i = 0; i < parent_dir->size; i++)
         {

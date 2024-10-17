@@ -1,8 +1,6 @@
 #include "../heartyfs.h"
 
-int create_file(struct heartyfs_superblock *superblock, void *buffer, 
-                        char *target_name, uint8_t target_block_id, 
-                        uint8_t parent_block_id, uint8_t *bitmap)
+int create_file(void *buffer, char *target_name, uint8_t target_block_id)
 {
     struct heartyfs_inode *created_file = (struct heartyfs_inode *)(buffer + BLOCK_SIZE * target_block_id);
     created_file->type = 0;
@@ -52,8 +50,8 @@ int main(int argc, char *argv[])
 
     // Check whether directory is exists or not
     struct heartyfs_directory *parent_dir = superblock->root_dir;
-    char dir_name[FILENAME_MAX];
-    int diff = dir_string_check(argv[1], dir_name, buffer, &parent_dir, bitmap);
+    char file_name[FILENAME_MAX];
+    int diff = dir_string_check(argv[1], file_name, buffer, &parent_dir, bitmap);
     if (diff == 1) // Check whether the input string directory is more than to current by 1 directory
     {
         // Check whether there is a free block available
@@ -61,12 +59,11 @@ int main(int argc, char *argv[])
         if (free_block_id > 0)
         {
             // Check and create an entry on the parent block if possible
-            if (create_entry(superblock, parent_dir, dir_name, free_block_id, bitmap) == 1) 
+            if (create_entry(superblock, parent_dir, file_name, free_block_id, bitmap) == 1) 
             {
                 // Check and create a file if possible
                 int parent_block_id = parent_dir->entries[0].block_id;
-                if (create_file(superblock, buffer, dir_name, 
-                                        free_block_id, parent_block_id, bitmap) == 1)
+                if (create_file(buffer, file_name, free_block_id) == 1)
                 {
                     // Mark occupied
                     superblock->free_blocks--;
@@ -75,8 +72,8 @@ int main(int argc, char *argv[])
             }
         }
     }
-    else if (diff == 0) printf("Error: The file %s has already existed\n", dir_name);    
-    else printf("Error: No such a parent for directory: %s\n", dir_name);
+    else if (diff == 0) printf("Error: The file %s has already existed\n", file_name);    
+    else printf("Error: No such a parent for file: %s\n", file_name);
 
     // Clean up
     msync(buffer, DISK_SIZE, MS_SYNC);

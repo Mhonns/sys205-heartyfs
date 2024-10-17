@@ -65,5 +65,6 @@ int dir_string_check(char *input_str, char *dir_name, void* buffer,
                         struct heartyfs_directory **parent_dir, uint8_t *bitmap);
 int create_entry(struct heartyfs_superblock *superblock, struct heartyfs_directory *parent_dir, 
                     char *target_name, int target_block_id, uint8_t *bitmap);
-int remove_entry(struct heartyfs_directory *parent_dir, char *target_name);
+int remove_entry(struct heartyfs_superblock *superblock, void* buffer, 
+                    int parent_block_id, char *target_name);
 #endif

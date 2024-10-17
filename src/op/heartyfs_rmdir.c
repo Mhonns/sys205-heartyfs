@@ -1,19 +1,16 @@
 #include "../heartyfs.h"
 
 int remove_directory(struct heartyfs_superblock *superblock, void *buffer, 
-                        struct heartyfs_directory *target_dir, uint8_t *bitmap)
+                        struct heartyfs_directory *target_dir)
 {
     char temp_dir_name[FILENAME_MAX];
     strcpy(temp_dir_name, target_dir->name);
 
     // remove detail from parent of target_dir
     int parent_block_id = target_dir->entries[1].block_id;
-    struct heartyfs_directory *parent_dir = NULL;
-    if (parent_block_id == 0) parent_dir = superblock->root_dir;
-    else parent_dir = (struct heartyfs_directory *) (buffer + BLOCK_SIZE * parent_block_id);
-    if (remove_entry(parent_dir, temp_dir_name) != 1) return -1; 
+    if (remove_entry(superblock, buffer, parent_block_id, temp_dir_name) != 1) return -1; 
 
-    // remove detail from target dir (just in case)
+    // remove the entry from target dir (just in case)
     target_dir->type = 0;
     target_dir->name[0] = '\0'; 
     for (int i = 0; i < target_dir->size; i++)
@@ -21,8 +18,6 @@ int remove_directory(struct heartyfs_superblock *superblock, void *buffer,
         target_dir->entries[i].block_id = 0;
         target_dir->entries[i].file_name[0] = '\0';
     }
-    if (remove_entry(target_dir, ".") != 1) return -1; 
-    if (remove_entry(target_dir, "..") != 1) return -1;
 
     // remove detail in target_dir
     printf("Success: The directory was %s removed\n", temp_dir_name);
@@ -81,7 +76,7 @@ int main(int argc, char *argv[]) {
                 if (current_dir->size <= 2) 
                 {
                     int target_block_id = current_dir->entries[0].block_id;
-                    if (remove_directory(superblock, buffer, current_dir, bitmap) == 1)
+                    if (remove_directory(superblock, buffer, current_dir) == 1)
                     {
                         // Mark Free
                         superblock->free_blocks++;

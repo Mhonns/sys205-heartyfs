@@ -1,7 +1,7 @@
 #!/bin/bash
 bin/heartyfs_init
 
-# Creating case
+# Creating Directory Case
 # /                     # Should return exists
 # /dir1/dir2            # Should return error
 # /dir1/dir2/dir4       # Should be able to create
@@ -27,7 +27,7 @@ bin/heartyfs_mkdir /dir1/dir3/dir5
 echo "\ncase:/dir6"
 bin/heartyfs_mkdir /dir6
 
-# Removing case
+# Removing Directory Cases
 # /dir7             # Return does not exist
 # /dir3             # It is not the empty dir
 # /                 # Can not remove root
@@ -36,7 +36,7 @@ bin/heartyfs_mkdir /dir6
 # /dir1/dir3/dir5
 # /dir3
 
-echo '\n--Removing Cases--\n'
+echo '\n--Removing Directory Cases--\n'
 echo '\nError cases\n'
 echo "\ncase :/dir7"
 bin/heartyfs_rmdir /dir7   
@@ -58,7 +58,7 @@ bin/heartyfs_rmdir /dir1/dir3
 # /dir1/dir2/dir4
 #      /dir3/dir5
 
-echo '\n--Recreate dir4 cases--\n'
+echo '\n--Recreate directory cases--\n'
 bin/heartyfs_mkdir /dir1/dir2/dir4
 bin/heartyfs_mkdir /dir1/dir3
 
@@ -79,10 +79,36 @@ echo '\nValid cases\n'
 echo "\ncase :/dir1/dir2/dir4/file1.txt"
 bin/heartyfs_creat /dir1/dir2/dir4/file1.txt
 echo "\ncase :/dir1/dir3/file3.txt"
-bin/heartyfs_creat  /dir1/dir3/file3.txt
+bin/heartyfs_creat /dir1/dir3/file3.txt
 echo "\ncase :/file2.txt"
 bin/heartyfs_creat /file2.txt
 
-echo '\nError cases\n'
+echo '\nExtra: Error cases\n'
 echo "\ncase :/file2.txt"
 bin/heartyfs_creat /file2.txt
+
+# Removing file cases
+# /                             # Can not remove a root file
+# /dir1                         # Can not remove directory
+# /dir1/file2.txt               # Can not remove non existing file
+# 
+# /dir1/dir3/file3.txt
+# /dir1/file2.txt
+# /file2.txt
+# /file2.txt
+
+echo '\n--Removing file cases--\n'
+echo '\nError cases\n'
+echo "\ncase :/"
+bin/heartyfs_rm /
+echo "\ncase :/dir1"
+bin/heartyfs_rm /dir1
+
+echo '\nValid cases\n'
+bin/heartyfs_rm  /dir1/dir3/file3.txt
+echo "\ncase :/file2.txt"
+bin/heartyfs_rm /file2.txt
+
+echo '\nExtra Error cases\n'
+echo "\ncase :/file2.txt"
+bin/heartyfs_rm /file2.txt
