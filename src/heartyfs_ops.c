@@ -96,16 +96,25 @@ int create_entry(struct heartyfs_superblock *superblock, struct heartyfs_directo
 int remove_entry(struct heartyfs_directory *parent_dir, char *target_name)
 {
     // remove entries from the parent and move the last item
-    for (int i = 0; i < parent_dir->size; i++)
+    if (strcmp(target_name, ".") != 0 && strcmp(target_name, ".."))
     {
-        if (strcmp(parent_dir->entries[i].file_name, target_name) == 0)
+        for (int i = 0; i < parent_dir->size; i++)
         {
-            // Move the last entry to the removed entry
-            parent_dir->entries[i] = parent_dir->entries[parent_dir->size - 1];
-            parent_dir->size--;
-            printf("Success: Removed entry %s\n", target_name);
-            return 1;
+            if (strcmp(parent_dir->entries[i].file_name, target_name) == 0)
+            {
+                // Move the last entry to the removed entry
+                parent_dir->entries[i] = parent_dir->entries[parent_dir->size - 1];
+                parent_dir->size--;
+                printf("Success: Removed entry %s\n", target_name);
+                return 1;
+            }
         }
+        printf("Error: Can not find the entry %s\n", target_name);
+        return -1;
     }
-    return -1;
+    else
+    {
+        printf("Denied: Refuse to remove this entry %s\n", target_name);
+        return -1;
+    }
 }
