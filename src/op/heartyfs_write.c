@@ -48,9 +48,8 @@ int main(int argc, char *argv[])
     uint8_t *bitmap = (uint8_t *)(buffer + BLOCK_SIZE);
     if (strcmp(superblock->root_dir->name, "") == 0)
     {
-        msync(buffer, DISK_SIZE, MS_SYNC);
-        munmap(buffer, DISK_SIZE);
-        close(fd);
+        // Clean up
+        cleanup(buffer, fd);
         printf("Error: File system have not been initialized yet\n");
         exit(-1);
     }
@@ -83,7 +82,7 @@ int main(int argc, char *argv[])
             int alloc_status = allocate_datablock(superblock, buffer, bitmap, inode, &datablock);
             if (alloc_status != 1) 
             {
-                
+                cleanup(buffer, fd);
                 return -1;
             }
 

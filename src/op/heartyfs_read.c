@@ -32,7 +32,10 @@ int main(int argc, char *argv[])
     uint8_t *bitmap = (uint8_t *)(buffer + BLOCK_SIZE);
     if (strcmp(superblock->root_dir->name, "") == 0)
     {
+        // Clean up
+        cleanup(buffer, fd);
         printf("Error: File system have not been initialized yet\n");
+        exit(-1);
     }
     // Clean up
     cleanup(buffer, fd);
