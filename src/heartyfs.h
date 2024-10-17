@@ -34,7 +34,7 @@ struct heartyfs_superblock
     int block_size;         // 4 bytes
     int type;               // 4 bytes
     struct heartyfs_directory root_dir[1]; // 484 bytes
-}; // Overall: 504 bytes
+}; // Overall: 500 bytes
 
 struct heartyfs_inode 
 {
