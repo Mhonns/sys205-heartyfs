@@ -112,3 +112,6 @@ bin/heartyfs_rm /file2.txt
 echo '\nExtra Error cases\n'
 echo "\ncase :/file2.txt"
 bin/heartyfs_rm /file2.txt
+
+# Add the text to /tmp/heartyfs_example.txt
+echo "I Love hearty filesystem!" > /tmp/heartyfs_example.txt

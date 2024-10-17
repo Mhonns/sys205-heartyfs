@@ -24,7 +24,8 @@ int remove_directory(struct heartyfs_superblock *superblock, void *buffer,
     return 1;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) 
+{
     printf("heartyfs_rmdir\n");
 
     // Validate the command
@@ -92,9 +93,7 @@ int main(int argc, char *argv[]) {
     else printf("Error: No such a parent for directory: %s\n", dir_name);
 
     // Clean up
-    msync(buffer, DISK_SIZE, MS_SYNC);
-    munmap(buffer, DISK_SIZE);
-    close(fd);
+    cleanup(buffer, fd);
 
     return 0;
 }

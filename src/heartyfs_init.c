@@ -52,9 +52,7 @@ int main()
     printf("Debug: %d %d\n", status_block(1, test2), status_block(3, test2));
 
     // Clean up
-    msync(buffer, DISK_SIZE, MS_SYNC);
-    munmap(buffer, DISK_SIZE);
-    close(fd);
+    cleanup(buffer, fd);
     
     return 0;
 }

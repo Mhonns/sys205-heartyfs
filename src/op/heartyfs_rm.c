@@ -1,6 +1,6 @@
 #include "../heartyfs.h"
 
-int remove_file(void *buffer, uint8_t target_block_id)
+void remove_file(void *buffer, uint8_t target_block_id)
 {
     struct heartyfs_inode *target_file = (struct heartyfs_inode *) (buffer + BLOCK_SIZE * target_block_id);
     target_file->name[0] = '\0';
@@ -9,7 +9,8 @@ int remove_file(void *buffer, uint8_t target_block_id)
     memset(target_file->data_blocks, 0, sizeof(target_file->data_blocks));
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) 
+{
     printf("heartyfs_rm\n");
 
     // Validate the command
@@ -54,11 +55,10 @@ int main(int argc, char *argv[]) {
     int diff = dir_string_check(temp_input, file_name, buffer, &parent_dir, bitmap);
     if (diff == 0)  // Check whether the input string directory equal to current directory string.
     {
-        if (parent_dir->type != 0)
+        if (parent_dir->type == 1)
         {
             int parent_block_id = parent_dir->entries[0].block_id;
             int current_block_id = search_entry_in_dir(parent_dir, file_name);
-            printf("Parent Found: %s, Current dir name: %s\n", parent_dir->name, parent_dir->name);
             // remove an entry from the parent directory
             if (remove_entry(superblock, buffer, parent_block_id, file_name) == 1)
             {
@@ -69,14 +69,12 @@ int main(int argc, char *argv[]) {
                 free_block(current_block_id, bitmap);
             }
         } 
-        else printf("Error: The target entry is not a file\n");
+        else printf("Error: The parent is not a directory\n");
     }
     else printf("Error: No such a parent for file: %s\n", file_name);
 
     // Clean up
-    msync(buffer, DISK_SIZE, MS_SYNC);
-    munmap(buffer, DISK_SIZE);
-    close(fd);
+    cleanup(buffer, fd);
 
     return 0;
 }

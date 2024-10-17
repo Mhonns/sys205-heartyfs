@@ -125,3 +125,14 @@ int remove_entry(struct heartyfs_superblock *superblock, void* buffer,
         return -1;
     }
 }
+
+void cleanup(void *buffer, int fd) 
+{
+    if (buffer != NULL) {
+        msync(buffer, DISK_SIZE, MS_SYNC); // Sync changes to the file
+        munmap(buffer, DISK_SIZE);         // Unmap the memory
+    }
+    if (fd >= 0) {
+        close(fd);                    // Close the file descriptor
+    }
+}

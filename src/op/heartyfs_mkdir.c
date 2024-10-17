@@ -88,9 +88,7 @@ int main(int argc, char *argv[]) {
     else printf("Error: No such a parent for directory: %s\n", dir_name);
 
     // Clean up
-    msync(buffer, DISK_SIZE, MS_SYNC);
-    munmap(buffer, DISK_SIZE);
-    close(fd);
+    cleanup(buffer, fd);
 
     return 0;
 }

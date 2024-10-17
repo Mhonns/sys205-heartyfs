@@ -13,6 +13,7 @@ int create_file(void *buffer, char *target_name, uint8_t target_block_id)
 int main(int argc, char *argv[]) 
 {
     printf("heartyfs_creat\n");
+    
     // Validate the command
     if (argc <= 1)
     {
@@ -76,9 +77,7 @@ int main(int argc, char *argv[])
     else printf("Error: No such a parent for file: %s\n", file_name);
 
     // Clean up
-    msync(buffer, DISK_SIZE, MS_SYNC);
-    munmap(buffer, DISK_SIZE);
-    close(fd);
-
+    cleanup(buffer, fd);
+    
     return 0;
 }
