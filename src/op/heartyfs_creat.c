@@ -1,5 +1,37 @@
+/*
+ * heartyfs_creat.c
+ * 
+ * Brief
+ * - This program handles the creation of files within the filesystem.
+ *   The `create_file` function initializes a new file (inode) structure and
+ *   associates it with the specified block in the filesystem.
+ * 
+ * Data Structures:
+ * - The superblock stores metadata about the filesystem, including information
+ *   about available blocks and the root directory.
+ * - Inodes are used to represent files. Each inode stores the file's name, type,
+ *   and size.
+ * - Directories contain entries for files and subdirectories, stored as structures
+ *   with metadata such as block IDs and names.
+ * 
+ * Design Decisions:
+ * - Uses memory mapping (`mmap`) for efficient access to the disk image and
+ *   direct manipulation of filesystem structures.
+ * 
+ *                                          Created by Nathadon Samairat 18 Oct 2024
+ */
 #include "../heartyfs.h"
 
+
+/*
+ * @brief Initializes and creates a file within the filesystem.
+ * 
+ * @param buffer        Pointer to the memory-mapped disk buffer.
+ * @param target_name   Name of the file to be created.
+ * @param target_block_id Block ID where the file (inode) should be created.
+ * 
+ * @return int          Returns 1 on success, -1 on failure.
+ */
 int create_file(void *buffer, char *target_name, uint8_t target_block_id)
 {
     struct heartyfs_inode *created_file = (struct heartyfs_inode *)(buffer + BLOCK_SIZE * target_block_id);
@@ -72,8 +104,8 @@ int main(int argc, char *argv[])
             }
         }
     }
-    else if (diff == 0) printf("Error: The file %s has already existed\n", file_name);    
-    else printf("Error: No such a parent for file: %s\n", file_name);
+    else if (diff == 0) printf("Error: The file has already existed\n");    
+    else printf("Error: No such a parent for the file\n");
 
     // Clean up
     cleanup(buffer, fd);
