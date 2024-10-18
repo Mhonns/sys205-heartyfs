@@ -1,5 +1,35 @@
+/*
+ * heartyfs_write.c
+ * 
+ * Brief:
+ * - The program will copy the text from the targetfile and 
+ *   add into the created file system with the given directory
+ * 
+ * Data Structures:
+ * - Uses a superblock structure to manage overall filesystem metadata, including
+ *   free block count and bitmap for block availability.
+ * - Inodes store metadata about files, including their allocated data blocks.
+ * - A bitmap keeps track of occupied and free blocks for efficient allocation.
+ *
+ * Design Decisions:
+ * - Uses memory mapping (`mmap`) to directly manipulate the filesystem stored in
+ *   a disk file, allowing efficient read/write operations.
+ *  
+ *                                      Created by Nathadon Samairat 18 Oct 2024
+ */
 #include "../heartyfs.h"
 
+/*
+ * @brief Allocates a data block and updates the inode.
+ * 
+ * @param superblock Pointer to the superblock with free block info.
+ * @param buffer     Memory area containing data blocks.
+ * @param bitmap     Bitmap indicating block availability.
+ * @param inode      Inode needing a new data block.
+ * @param datablock  Pointer to store the address of the allocated block.
+ * 
+ * @return int       1 on success, -1 if no space or inode full.
+ */
 int allocate_datablock(struct heartyfs_superblock *superblock, void *buffer, 
                         uint8_t *bitmap, struct heartyfs_inode *inode,
                         struct heartyfs_data_block **datablock)
@@ -10,7 +40,7 @@ int allocate_datablock(struct heartyfs_superblock *superblock, void *buffer,
         {
             // Get a new datablock
             int free_block_id = find_free_block(bitmap);
-            *datablock = (buffer + DATA_BLOCK_SIZE * free_block_id);
+            *datablock = (struct heartyfs_data_block *)(buffer + free_block_id * BLOCK_SIZE);
             inode->data_blocks[inode->size] = free_block_id;
             inode->size++;
 
@@ -21,7 +51,6 @@ int allocate_datablock(struct heartyfs_superblock *superblock, void *buffer,
         }
         else 
         {
-            printf("Inode %d datablock %d\n", inode->size, DATA_BLOCK_SIZE);
             // The data is still too large
             printf("Error: The file is larger than %d bytes\n", 
                     MAX_DATA_BLOCKS * DATA_BLOCK_SIZE);
@@ -82,39 +111,41 @@ int main(int argc, char *argv[])
     {
         if (parent_dir->type == 1)
         {
-            // Open the text file for reading
-            FILE *read_file = fopen(argv[2], "r");  
-            if (read_file == NULL) 
-            {
-                // Clean up
-                cleanup(buffer, fd);
-                perror("Cannot map the disk file onto memory\n");
-                exit(1);
-            }
-
-            // Check the inode type
             int current_block_id = search_entry_in_dir(parent_dir, file_name);
-            struct heartyfs_inode *inode = (struct heartyfs_inode *) (buffer + (current_block_id * BLOCK_SIZE));
-            
-            // Read the content DATA_BLOCK_SIZE by DATA_BLOCK_SIZE from the file
-            char input_buffer[DATA_BLOCK_SIZE];
-            size_t bytesRead;
-            while ((bytesRead = fread(input_buffer, sizeof(char), DATA_BLOCK_SIZE, read_file)) > 0) 
-            {
-                // Allocate a data block 
-                struct heartyfs_data_block *datablock = NULL;
-                int alloc_status = allocate_datablock(superblock, buffer, bitmap, inode, &datablock);
-                if (alloc_status != 1) 
+            if (current_block_id > 1) 
+            {   
+                // Open the text file for reading
+                FILE *read_file = fopen(argv[2], "r");  
+                if (read_file == NULL) 
                 {
+                    // Clean up
                     cleanup(buffer, fd);
-                    return -1;
+                    printf("Cannot map the disk file onto memory\n");
+                    exit(1);
                 }
-                // Copy the content to the data block name
-                snprintf(datablock->name, sizeof(datablock->name), "%s", input_buffer);
-                datablock->size = DATA_BLOCK_SIZE;
-            }
-            fclose(read_file);
-            printf("Success: Copy the content from: %s to: %s\n", argv[1], argv[2]);
+
+                // Read the content DATA_BLOCK_SIZE by DATA_BLOCK_SIZE from the file
+                struct heartyfs_inode *inode = (struct heartyfs_inode *) (buffer + (current_block_id * BLOCK_SIZE));
+                char input_buffer[DATA_BLOCK_SIZE];
+                size_t bytesRead;
+                while ((bytesRead = fread(input_buffer, sizeof(char), DATA_BLOCK_SIZE, read_file)) > 0) 
+                {
+                    // Allocate a data block 
+                    struct heartyfs_data_block *datablock = NULL;
+                    int alloc_status = allocate_datablock(superblock, buffer, bitmap, inode, &datablock);
+                    if (alloc_status != 1) 
+                    {
+                        cleanup(buffer, fd);
+                        return -1;
+                    }
+                    // Copy the content to the data block name
+                    snprintf(datablock->name, sizeof(datablock->name), "%s", input_buffer);
+                    datablock->size = DATA_BLOCK_SIZE;
+                }
+                printf("Success: Copy the content from: %s to: %s\n", argv[1], argv[2]);
+                fclose(read_file);
+            }   
+            else printf("Error: The target is not found on the datablock: %s\n", file_name);
         } 
         else printf("Error: The parent is not a directory\n");
     }
