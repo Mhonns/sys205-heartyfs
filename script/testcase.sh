@@ -93,7 +93,6 @@ bin/heartyfs_creat /file2.txt
 # /dir1/file2.txt               # Can not remove non existing file
 # 
 # /dir1/dir3/file3.txt
-# /dir1/file2.txt
 # /file2.txt
 # /file2.txt
 
@@ -103,6 +102,9 @@ echo "\ncase :/"
 bin/heartyfs_rm /
 echo "\ncase :/dir1"
 bin/heartyfs_rm /dir1
+echo "\ncase :/dir1/file2.txt"
+bin/heartyfs_rm /dir1/file2.txt
+
 
 echo '\nValid cases\n'
 bin/heartyfs_rm  /dir1/dir3/file3.txt
@@ -113,5 +115,31 @@ echo '\nExtra Error cases\n'
 echo "\ncase :/file2.txt"
 bin/heartyfs_rm /file2.txt
 
+# Write a file cases
 # Add the text to /tmp/heartyfs_example.txt
+# /dir1 /tmp/heartyfs_example.txt                       # error the target is not a directory
+# /dir1/dir2/dir4/fil.txt /tmp/heartyfs_example.txt     # no such a file or directory
+# /dir1/dir2/dir4/file1.txt /tmp/heartyfs_example.txt   
+
 echo "I Love hearty filesystem!" > /tmp/heartyfs_example.txt
+
+echo '\n--Write a file cases--\n'
+echo '\nError cases\n'
+echo "\ncase :/dir1 /tmp/heartyfs_example.txt"
+bin/heartyfs_write /dir1 /tmp/heartyfs_example.txt
+echo "\ncase :/dir1/dir2/dir4/fil.txt /tmp/heartyfs_example.txt"
+bin/heartyfs_write /dir1/dir2/dir4/fil.txt /tmp/heartyfs_example.txt   
+
+echo '\nValid cases\n'
+echo "\ncase :/dir1/dir2/dir4/file1.txt /tmp/heartyfs_example.txt "
+bin/heartyfs_write /dir1/dir2/dir4/file1.txt /tmp/heartyfs_example.txt   
+
+# Read a file cases
+# /dir1/dir2/dir4/fil.txt /tmp/heartyfs_example.txt  # no such a file fil.txt
+# /dir1/dir2/dir4/file1.txt                          # read this file
+echo '\n--Read a file cases--\n'
+echo '\nError cases\n'
+bin/heartyfs_read /dir1/dir2/dir4/fil.txt /tmp/heartyfs_example.txt 
+
+echo '\nValid cases\n'
+bin/heartyfs_read /dir1/dir2/dir4/file1.txt
