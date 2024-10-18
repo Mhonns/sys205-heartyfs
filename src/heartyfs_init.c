@@ -1,3 +1,25 @@
+/*
+ * heartyfs_init.c
+ * 
+ * Brief
+ * - This program initializes the filesystem. It sets up the superblock, initializes
+ *   the bitmap to track free and occupied blocks, and creates the root directory along with 
+ *   the "." and ".." entries to establish the directory structure.
+ * 
+ * Data Structures:
+ * - Superblock: The central structure storing metadata about the filesystem, such as the total 
+ *   number of blocks, free blocks, and the block size.
+ * - Bitmap: A bit array used to track the status of blocks (free or occupied) in the filesystem.
+ * - Directory: Represents the root directory and contains entries that point to files or subdirectories.
+ * 
+ * Design Decisions:
+ * - Memory mapping (`mmap`) is used to map the disk file into memory, allowing efficient access
+ *   and modification of the filesystem image.
+ * - The bitmap is initialized with all bits set to 1, indicating that all blocks are initially free.
+ * - Special entries (".", "..") are created for the root directory to facilitate navigation and consistency.
+ * 
+ *                                          Created by Nathadon Samairat 18 Oct 2024
+ */
 #include "heartyfs.h"
 
 int main() 
@@ -41,15 +63,6 @@ int main()
     occupy_block(0, bitmap);   // Occupied first block for superblock
     occupy_block(1, bitmap);   // Occupied second block for bitmap
     memcpy((uint8_t *)(buffer + BLOCK_SIZE), bitmap, sizeof(bitmap)); // Put in the second block
-
-    // Test the block 1 and block 2
-    // TODO delete this
-    struct heartyfs_superblock *test = (struct heartyfs_superblock *)(buffer);
-    printf("Debug: %s\n", test->root_dir->name);
-    printf("Debug: %s\n", test->root_dir->entries[0].file_name);
-    printf("Debug: %s\n", test->root_dir->entries[1].file_name);
-    uint8_t *test2 = (uint8_t *)(buffer + BLOCK_SIZE);
-    printf("Debug: %d %d\n", status_block(1, test2), status_block(3, test2));
 
     // Clean up
     cleanup(buffer, fd);
