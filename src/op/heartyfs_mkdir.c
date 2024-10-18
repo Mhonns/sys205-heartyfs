@@ -1,5 +1,43 @@
+/*
+ * heartyfs_mkdir.c
+ * 
+ * Brief
+ * - This program handles directory creation within the HeartyFS filesystem.
+ *   The `create_directory` function sets up a new directory with appropriate
+ *   entries ('.' and '..') and updates the parent directory with the new directory's
+ *   entry if sufficient space is available.
+ * 
+ * Data Structures:
+ * - `heartyfs_superblock`: Stores filesystem metadata, including free block information
+ *   and the root directory reference.
+ * - `heartyfs_directory`: Represents a directory structure with its type, size, name,
+ *   and entries pointing to files or subdirectories.
+ * - `bitmap`: Tracks which blocks are free or occupied.
+ * 
+ * Design Decisions:
+ * - Uses `mmap` to map the disk file into memory for direct access to filesystem structures.
+ * - Checks for available free blocks before creating a directory to ensure space availability.
+ * - Updates the parent directory entries and marks the block occupied once a directory is created.
+ * 
+ *                                          Created by Nathadon Samairat 18 Oct 2024
+ */
+
 #include "../heartyfs.h"
 
+/*
+ * create_directory
+ * - Initializes a new directory structure in the filesystem. It sets up 
+ *   the directory with entries for the current (".") and parent ("..") directories.
+ * 
+ * @param superblock       Pointer to the superblock containing metadata and free block info.
+ * @param buffer           Memory area containing the filesystem data.
+ * @param target_name      The name of the new directory to be created.
+ * @param target_block_id  The ID of the block where the new directory will be created.
+ * @param parent_block_id  The ID of the parent directory block.
+ * @param bitmap           Bitmap indicating block availability.
+ * 
+ * @return int             1 on success, -1 if the creation fails.
+ */
 int create_directory(struct heartyfs_superblock *superblock, void *buffer, 
                         char *target_name, uint8_t target_block_id, 
                         uint8_t parent_block_id, uint8_t *bitmap)
