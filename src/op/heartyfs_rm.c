@@ -1,5 +1,33 @@
+/*
+ * heartyfs_rm.c
+ * 
+ * Brief
+ * - This program handles the removal of files within the filesystem.
+ *   The `remove_file` function clears the file's metadata and data blocks in the
+ *   specified block, effectively deleting the file from the filesystem.
+ * 
+ * Data Structures:
+ * - The superblock contains filesystem metadata, such as the root directory and a
+ *   bitmap for tracking the status of blocks (free or occupied).
+ * - Inodes represent files, storing file attributes like name, type, size, and 
+ *   associated data blocks.
+ * - Directories maintain entries for files and subdirectories, containing metadata 
+ *   such as block IDs and names.
+ * 
+ * Design Decisions:
+ * - Utilizes memory mapping (`mmap`) for efficient access to the disk image and 
+ *   manipulation of filesystem structures.
+ * 
+ *                                          Created by Nathadon Samairat 18 Oct 2024
+ */
 #include "../heartyfs.h"
 
+/*
+ * @brief Removes a file from the filesystem by clearing its metadata and data blocks.
+ * 
+ * @param buffer         Pointer to the memory-mapped disk buffer.
+ * @param target_block_id Block ID of the file to be removed.
+ */
 void remove_file(void *buffer, uint8_t target_block_id)
 {
     struct heartyfs_inode *target_file = (struct heartyfs_inode *) (buffer + BLOCK_SIZE * target_block_id);
@@ -52,7 +80,7 @@ int main(int argc, char *argv[])
     char file_name[FILENAME_MAX];
     char *temp_input = argv[1];
     int diff = dir_string_check(temp_input, file_name, buffer, &parent_dir, bitmap);
-    if (diff == 0)  // Check whether the input string directory equal to current directory string.
+    if (diff == 1)  // Check whether the input string directory equal to current directory string.
     {
         if (parent_dir->type == 1)
         {
@@ -70,7 +98,7 @@ int main(int argc, char *argv[])
         } 
         else printf("Error: The parent is not a directory\n");
     }
-    else printf("Error: No such a parent for file: %s\n", file_name);
+    else printf("Error: The target is not a file\n");
 
     // Clean up
     cleanup(buffer, fd);
