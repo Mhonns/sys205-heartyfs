@@ -1,5 +1,34 @@
+/*
+ * heartyfs_rmdir.c
+ * 
+ * Brief
+ * - The program is handling the removal of directories within the filesystem. 
+ *   The `remove_directory` function deletes the specified directory
+ *   from the filesystem by clearing its entries and updating the parent directory.
+ * 
+ * Data Structures:
+ * - The superblock holds the filesystem's metadata, including the root directory and
+ *   a bitmap that tracks the status of blocks (free or occupied).
+ * - Directories are stored as structures containing their name, type, and entries,
+ *   where entries may point to files or subdirectories.
+ * 
+ * Design Decisions:
+ * - Uses memory mapping (`mmap`) to load the disk image, providing direct access to
+ *   filesystem structures for efficient manipulation.
+ * 
+ *                                          Created by Nathadon Samairat 18 Oct 2024
+ */
 #include "../heartyfs.h"
 
+/*
+ * @brief Removes a directory and updates the superblock and bitmap.
+ * 
+ * @param superblock Pointer to the superblock containing filesystem metadata.
+ * @param buffer     Memory area containing the filesystem data.
+ * @param target_dir Directory structure to be removed.
+ * 
+ * @return int       1 on success, -1 on failure (e.g., if removal fails).
+ */
 int remove_directory(struct heartyfs_superblock *superblock, void *buffer, 
                         struct heartyfs_directory *target_dir)
 {
