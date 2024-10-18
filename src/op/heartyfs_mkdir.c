@@ -83,8 +83,8 @@ int main(int argc, char *argv[]) {
         }
         else printf("Error: There is no free block left in the disk\n");
     }
-    else if (diff == 0) printf("Error: The directory %s has already existed\n", dir_name);    
-    else printf("Error: No such a parent for directory: %s\n", dir_name);
+    else if (diff == 0) printf("Error: The directory has already existed\n");    
+    else printf("Error: No such a parent for directory");
 
     // Clean up
     cleanup(buffer, fd);
