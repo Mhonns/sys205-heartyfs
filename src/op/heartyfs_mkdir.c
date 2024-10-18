@@ -2,7 +2,7 @@
  * heartyfs_mkdir.c
  * 
  * Brief
- * - This program handles directory creation within the HeartyFS filesystem.
+ * - This program handles directory creation within the filesystem.
  *   The `create_directory` function sets up a new directory with appropriate
  *   entries ('.' and '..') and updates the parent directory with the new directory's
  *   entry if sufficient space is available.
